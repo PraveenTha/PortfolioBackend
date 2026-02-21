@@ -6,13 +6,13 @@ require("dotenv").config();
 const app = express();
 
 /* =======================
-   CORS CONFIG (PRODUCTION SAFE)
+   CORS FIXED CONFIG
 ======================= */
 const allowedOrigins = [
-  "http://localhost:5173", // local frontend
-  "http://localhost:3000", // optional
-  "https://your-frontend.vercel.app", // 🔥 replace after deploy
-  "https://your-admin.vercel.app", // 🔥 replace after deploy
+  "http://localhost:5173",
+  "http://localhost:3000",
+  "https://portfolio-admin-panel-phi.vercel.app",
+  "https://your-frontend.vercel.app" // replace with real frontend later
 ];
 
 app.use(
@@ -29,7 +29,7 @@ app.use(
 );
 
 /* =======================
-   BODY LIMIT
+   BODY PARSER
 ======================= */
 app.use(express.json({ limit: "20mb" }));
 app.use(express.urlencoded({ extended: true, limit: "20mb" }));
@@ -40,28 +40,19 @@ app.use(express.urlencoded({ extended: true, limit: "20mb" }));
 app.use("/api/auth", require("./routes/authRoutes"));
 app.use("/api/admin/dashboard", require("./routes/dashboardRoutes"));
 app.use("/api/admin/hero", require("./routes/heroRoutes"));
-
 app.use("/api/admin/about", require("./routes/aboutRoutes"));
 app.use("/api/about", require("./routes/aboutRoutes"));
-
 app.use("/api/admin/settings", require("./routes/settingsRoutes"));
-
 app.use("/api/admin/skills", require("./routes/skillRoutes"));
 app.use("/api/skills", require("./routes/skillRoutes"));
-
 app.use("/api/admin/experience", require("./routes/experienceRoutes"));
 app.use("/api/experience", require("./routes/publicExperienceRoutes"));
-
 app.use("/api/admin/projects", require("./routes/projectRoutes"));
 app.use("/api/projects", require("./routes/publicProjectRoutes"));
-
 app.use("/api/admin/project-categories", require("./routes/projectCategoryRoutes"));
-
 app.use("/api/admin/services", require("./routes/serviceRoutes"));
 app.use("/api/services", require("./routes/publicServiceRoutes"));
-
 app.use("/api/contact", require("./routes/contactRoutes"));
-
 app.use("/api/admin/blogs", require("./routes/blogRoutes"));
 app.use("/api/blogs", require("./routes/blogRoutes"));
 
@@ -87,15 +78,8 @@ mongoose
    GLOBAL ERROR HANDLER
 ======================= */
 app.use((err, req, res, next) => {
-  if (err.code === "ECONNRESET") {
-    console.log("⚠️ Request aborted by client");
-    return res.status(400).json({ message: "Request aborted" });
-  }
-
   console.error("🔥 GLOBAL ERROR:", err.message);
-  res.status(err.http_code || 500).json({
-    message: err.message || "Server Error",
-  });
+  res.status(500).json({ message: err.message || "Server Error" });
 });
 
 /* =======================
