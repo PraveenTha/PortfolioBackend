@@ -6,25 +6,13 @@ require("dotenv").config();
 const app = express();
 
 /* =======================
-   CORS FIXED CONFIG
+   CORS (NO MORE ERRORS)
 ======================= */
-const allowedOrigins = [
-  "http://localhost:5173",
-  "http://localhost:3000",
-  "https://portfolio-admin-panel-phi.vercel.app",
-  "https://your-frontend.vercel.app" // replace with real frontend later
-];
-
 app.use(
   cors({
-    origin: function (origin, callback) {
-      if (!origin || allowedOrigins.includes(origin)) {
-        callback(null, true);
-      } else {
-        callback(new Error("CORS not allowed"));
-      }
-    },
-    credentials: true,
+    origin: "*",
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization"],
   })
 );
 
@@ -79,7 +67,9 @@ mongoose
 ======================= */
 app.use((err, req, res, next) => {
   console.error("🔥 GLOBAL ERROR:", err.message);
-  res.status(500).json({ message: err.message || "Server Error" });
+  res.status(500).json({
+    message: err.message || "Server Error",
+  });
 });
 
 /* =======================
