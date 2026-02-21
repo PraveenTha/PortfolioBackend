@@ -3,79 +3,67 @@ const mongoose = require("mongoose");
 const cors = require("cors");
 require("dotenv").config();
 
-/* =======================
-   INIT APP
-======================= */
 const app = express();
 
 /* =======================
-   MIDDLEWARES
+   CORS CONFIG (PRODUCTION SAFE)
 ======================= */
+const allowedOrigins = [
+  "http://localhost:5173", // local frontend
+  "http://localhost:3000", // optional
+  "https://your-frontend.vercel.app", // 🔥 replace after deploy
+  "https://your-admin.vercel.app", // 🔥 replace after deploy
+];
+
 app.use(
   cors({
-    origin: "*",
-    methods: ["GET", "POST", "PUT", "DELETE"],
+    origin: function (origin, callback) {
+      if (!origin || allowedOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        callback(new Error("CORS not allowed"));
+      }
+    },
+    credentials: true,
   })
 );
 
-/* 🔥 IMPORTANT: Increase body limit */
+/* =======================
+   BODY LIMIT
+======================= */
 app.use(express.json({ limit: "20mb" }));
 app.use(express.urlencoded({ extended: true, limit: "20mb" }));
 
 /* =======================
-   IMPORT ROUTES
-======================= */
-const authRoutes = require("./routes/authRoutes");
-const dashboardRoutes = require("./routes/dashboardRoutes");
-const heroRoutes = require("./routes/heroRoutes");
-const aboutRoutes = require("./routes/aboutRoutes");
-const settingsRoutes = require("./routes/settingsRoutes");
-const skillRoutes = require("./routes/skillRoutes");
-
-const experienceRoutes = require("./routes/experienceRoutes");
-const publicExperienceRoutes = require("./routes/publicExperienceRoutes");
-
-const projectRoutes = require("./routes/projectRoutes");
-const publicProjectRoutes = require("./routes/publicProjectRoutes");
-const projectCategoryRoutes = require("./routes/projectCategoryRoutes");
-
-const serviceRoutes = require("./routes/serviceRoutes");
-const publicServiceRoutes = require("./routes/publicServiceRoutes");
-
-const contactRoutes = require("./routes/contactRoutes");
-const blogRoutes = require("./routes/blogRoutes");
-
-/* =======================
    ROUTES
 ======================= */
+app.use("/api/auth", require("./routes/authRoutes"));
+app.use("/api/admin/dashboard", require("./routes/dashboardRoutes"));
+app.use("/api/admin/hero", require("./routes/heroRoutes"));
 
-app.use("/api/auth", authRoutes);
-app.use("/api/admin/dashboard", dashboardRoutes);
-app.use("/api/admin/hero", heroRoutes);
+app.use("/api/admin/about", require("./routes/aboutRoutes"));
+app.use("/api/about", require("./routes/aboutRoutes"));
 
-app.use("/api/admin/about", aboutRoutes);
-app.use("/api/about", aboutRoutes);
+app.use("/api/admin/settings", require("./routes/settingsRoutes"));
 
-app.use("/api/admin/settings", settingsRoutes);
+app.use("/api/admin/skills", require("./routes/skillRoutes"));
+app.use("/api/skills", require("./routes/skillRoutes"));
 
-app.use("/api/admin/skills", skillRoutes);
-app.use("/api/skills", skillRoutes);
+app.use("/api/admin/experience", require("./routes/experienceRoutes"));
+app.use("/api/experience", require("./routes/publicExperienceRoutes"));
 
-app.use("/api/admin/experience", experienceRoutes);
-app.use("/api/experience", publicExperienceRoutes);
+app.use("/api/admin/projects", require("./routes/projectRoutes"));
+app.use("/api/projects", require("./routes/publicProjectRoutes"));
 
-app.use("/api/admin/projects", projectRoutes);
-app.use("/api/projects", publicProjectRoutes);
+app.use("/api/admin/project-categories", require("./routes/projectCategoryRoutes"));
 
-app.use("/api/admin/project-categories", projectCategoryRoutes);
+app.use("/api/admin/services", require("./routes/serviceRoutes"));
+app.use("/api/services", require("./routes/publicServiceRoutes"));
 
-app.use("/api/admin/services", serviceRoutes);
-app.use("/api/services", publicServiceRoutes);
+app.use("/api/contact", require("./routes/contactRoutes"));
 
-app.use("/api/contact", contactRoutes);
-
-app.use("/api/admin/blogs", blogRoutes);
-app.use("/api/blogs", blogRoutes);
+app.use("/api/admin/blogs", require("./routes/blogRoutes"));
+app.use("/api/blogs", require("./routes/blogRoutes"));
 
 /* =======================
    HEALTH CHECK
@@ -104,7 +92,7 @@ app.use((err, req, res, next) => {
     return res.status(400).json({ message: "Request aborted" });
   }
 
-  console.error("🔥 GLOBAL ERROR:", err);
+  console.error("🔥 GLOBAL ERROR:", err.message);
   res.status(err.http_code || 500).json({
     message: err.message || "Server Error",
   });
@@ -116,5 +104,5 @@ app.use((err, req, res, next) => {
 const PORT = process.env.PORT || 5000;
 
 app.listen(PORT, () => {
-  console.log(`🚀 Server running on http://localhost:${PORT}`);
+  console.log(`🚀 Server running on port ${PORT}`);
 });
